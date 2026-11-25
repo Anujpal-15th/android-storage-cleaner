@@ -24,20 +24,21 @@ defaults:
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false
   GRADLE: gradle --console=plain --warning-mode=summary
+  RELEASE_CERT_SHA256: a4d21856125f1d69b9819223da2cc8c5938844461f6113135149a97ecd4ed04f # public fingerprint, not a secret
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: "8.11.1"
 
@@ -61,6 +62,13 @@ jobs:
         run: |
           $GRADLE assembleRelease 2>&1 | tee -a build.log
           cp app/build/outputs/apk/release/app-release.apk "StorageCleaner-${GITHUB_REF_NAME//\//-}.apk"
+          # releases must carry the release key, or they can't update installed copies
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner
+          cert=$("$apksigner" verify --print-certs StorageCleaner-*.apk | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)
+          echo "Signed with certificate SHA-256 $cert" | tee -a build.log
+          if [ "${{ github.event_name }}" != pull_request ] && [ "$cert" != "$RELEASE_CERT_SHA256" ]; then
+            echo "::error title=Wrong signing key::APK is not signed with the release key"; exit 1
+          fi
 
       - name: Report
         if: always()
@@ -68,14 +76,14 @@ jobs:
           JOB_STATUS: ${{ job.status }}
         run: python3 .github/ci-report.py
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: apk
           path: StorageCleaner-*.apk
           if-no-files-found: ignore
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: reports
