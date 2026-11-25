@@ -181,7 +181,7 @@ class MainVm(app: Application) : AndroidViewModel(app) {
         appsJob = viewModelScope.launch { apps = withContext(Dispatchers.IO) { loadApps(ctx) } }
     }
 
-    fun setWeekly(on: Boolean) {
+    fun changeWeekly(on: Boolean) {
         weekly = on
         prefs.edit().putBoolean("weekly", on).apply()
         CleanWorker.schedule(ctx, on)
@@ -513,7 +513,7 @@ fun AppRow(a: AppStat, now: Long) {
 @Composable
 fun MoreTab(vm: MainVm) {
     // Android 13+: ask for notifications so the weekly run can say what it freed; schedule either way.
-    val notify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { vm.setWeekly(true) }
+    val notify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { vm.changeWeekly(true) }
     val date = remember { DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT) }
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
@@ -525,7 +525,7 @@ fun MoreTab(vm: MainVm) {
                             style = MaterialTheme.typography.bodySmall, color = muted)
                     }
                     Switch(checked = vm.weekly, onCheckedChange = { on ->
-                        if (on && Build.VERSION.SDK_INT >= 33) notify.launch(Manifest.permission.POST_NOTIFICATIONS) else vm.setWeekly(on)
+                        if (on && Build.VERSION.SDK_INT >= 33) notify.launch(Manifest.permission.POST_NOTIFICATIONS) else vm.changeWeekly(on)
                     })
                 }
             }

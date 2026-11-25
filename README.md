@@ -1,5 +1,8 @@
 # Storage Cleaner for Android
 
+[![Build](https://github.com/Anujpal-15th/android-storage-cleaner/actions/workflows/build.yml/badge.svg)](https://github.com/Anujpal-15th/android-storage-cleaner/actions/workflows/build.yml)
+[![Download](https://img.shields.io/github/v/release/Anujpal-15th/android-storage-cleaner?label=download%20APK)](https://github.com/Anujpal-15th/android-storage-cleaner/releases/latest)
+
 A free, open-source Android app (Android 8+, Kotlin + Jetpack Compose) that shows **what is filling your phone** and **what is actually safe to delete**. It is the mobile companion to the Windows [Storage Cleaner](https://github.com/Anujpal-15th/storage-cleaner).
 
 Every item gets a safety level and a plain-English note:
@@ -49,3 +52,15 @@ Scanner tests run on a plain JVM, no device needed: right-click `app/src/test/..
 ## License
 
 [MIT](LICENSE). Provided as-is, without warranty: review what you delete.
+
+## CI
+
+Every push compiles, runs the unit tests and builds a signed APK ([Actions](https://github.com/Anujpal-15th/android-storage-cleaner/actions)). Each run's page shows a summary table with every compile error or failed test as `file:line`, and errors are annotated on the code. From a terminal:
+
+```bash
+gh run watch                       # follow the latest run
+gh run view --log-failed           # only the failing step's log
+gh run download -n apk             # get the APK a run built
+```
+
+Releasing: `git tag v1.2.0 && git push origin v1.2.0` builds, signs and publishes the release with the APK.
