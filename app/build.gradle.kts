@@ -4,6 +4,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// CI sets these: a v1.2.3 tag becomes versionName 1.2.3; the run number keeps versionCode increasing.
+val tag = System.getenv("GITHUB_REF_NAME")?.removePrefix("v")?.takeIf { it.firstOrNull()?.isDigit() == true }
+val keystore = System.getenv("KEYSTORE_FILE")
+
 android {
     namespace = "dev.storagecleaner"
     compileSdk = 35
@@ -11,8 +15,24 @@ android {
         applicationId = "dev.storagecleaner"
         minSdk = 26 // StorageStatsManager + java.nio.file
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toInt() ?: 1
+        versionName = tag ?: "1.0.0-dev"
+    }
+    signingConfigs {
+        if (keystore != null) create("release") {
+            storeFile = file(keystore)
+            storeType = "pkcs12"
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = "storagecleaner"
+            keyPassword = System.getenv("KEYSTORE_PASSWORD")
+        }
+    }
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            // without the release key (local builds), sign with the debug key so the APK still installs
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
