@@ -230,7 +230,7 @@ fun Root(vm: MainVm) {
     LaunchedEffect(vm.message) {
         vm.message?.let { snack.showSnackbar(it); vm.message = null }
     }
-    val tabs = listOf("Clean" to Icons.Filled.Delete, "Apps" to Icons.AutoMirrored.Filled.List, "More" to Icons.Filled.Settings)
+    val tabs = listOf("Clean" to Icons.Filled.Delete, "Apps" to Icons.AutoMirrored.Filled.ListIcon, "More" to Icons.Filled.Settings)
     Scaffold(
         topBar = { TopAppBar(title = { Text("Storage Cleaner", fontWeight = FontWeight.SemiBold) }) },
         bottomBar = {
